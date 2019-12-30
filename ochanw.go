@@ -62,7 +62,6 @@ func New(out io.Writer, opt ...Option) *Ow {
 
 				w.mu.Lock()
 				if w.state == background {
-					// ロック不要
 					w.state = toCurrent
 				}
 				w.mu.Unlock()
@@ -118,11 +117,9 @@ func (w *WriteCloser) Write(p []byte) (n int, err error) {
 	defer w.mu.Unlock()
 	switch w.state {
 	case background:
-		// background 時はため込む
 		w.buffer = append(w.buffer, p...)
 		return len(p), nil
 	case toCurrent:
-		// lock しつつため込んだものを出力し、切り替える
 		_, err := w.parent.out.Write(w.buffer)
 		if err != nil {
 			return 0, err
@@ -130,7 +127,6 @@ func (w *WriteCloser) Write(p []byte) (n int, err error) {
 		w.buffer = w.buffer[0:0]
 		w.state = current
 	case current:
-		// 直接 write する
 	}
 
 	return w.parent.out.Write(p)
