@@ -1,4 +1,4 @@
-package ochan
+package ochanw
 
 import (
 	"io"
@@ -20,27 +20,27 @@ const (
 	current
 )
 
-// OwOption ...
-type OwOption func(*owOptions)
+// Option ...
+type Option func(*options)
 
-type owOptions struct {
+type options struct {
 	size int
 }
 
-var defaultOchanOption = owOptions{
+var defaultOption = options{
 	size: 100,
 }
 
 // WithSize ...
-func WithSize(s int) OwOption {
-	return func(o *owOptions) {
+func WithSize(s int) Option {
+	return func(o *options) {
 		o.size = s
 	}
 }
 
-// NewOw returns a new Ow struct
-func NewOw(out io.Writer, opt ...OwOption) *Ow {
-	opts := defaultOchanOption
+// New returns a new Ow struct
+func New(out io.Writer, opt ...Option) *Ow {
+	opts := defaultOption
 	for _, f := range opt {
 		f(&opts)
 	}

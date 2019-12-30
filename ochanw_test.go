@@ -1,4 +1,4 @@
-package ochan
+package ochanw
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 
 func ExampleOw() {
 	buf := bytes.Buffer{}
-	o := NewOw(&buf)
+	o := New(&buf)
 
 	w1 := o.GetW()
 	w2 := o.GetW()
