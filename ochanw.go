@@ -92,11 +92,18 @@ func (o *Ow) Wait() error {
 }
 
 // GetW returns a next io.WriteCloser.
-func (o *Ow) GetW() *WriteCloser {
+func (o *Ow) GetW(opt ...Option) *WriteCloser {
+	opts := defaultOption
+	for _, f := range opt {
+		f(&opts)
+	}
+
 	next := &WriteCloser{
-		parent: o,
+		buffer: make([]byte, 0, opts.size),
 		state:  background,
+		parent: o,
 		done:   make(chan struct{}, 1),
+		mu:     sync.Mutex{},
 	}
 	o.in <- next
 	return next
@@ -111,7 +118,7 @@ type WriteCloser struct {
 	mu     sync.Mutex
 }
 
-// Write ...
+// Write writes to ochanw's io.Writer.
 func (w *WriteCloser) Write(p []byte) (n int, err error) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
@@ -132,7 +139,7 @@ func (w *WriteCloser) Write(p []byte) (n int, err error) {
 	return w.parent.out.Write(p)
 }
 
-// Close ...
+// Close closes ochanw.WriteCloser.
 func (w *WriteCloser) Close() error {
 	w.done <- struct{}{}
 	return nil
