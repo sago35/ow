@@ -1,38 +1,49 @@
-[![GoDoc Reference](https://godoc.org/github.com/sago35/ochan?status.svg)](https://godoc.org/github.com/sago35/ochan)
+[![GoDoc Reference](https://godoc.org/github.com/sago35/ow?status.svg)](https://godoc.org/github.com/sago35/ow)
 
-# Ochan
+# Ow
 
-Package ochan provides ordered chan.
+Package ow provides ordered io.Writer.
 
 ## Usage
 
 ```go
-func ExampleOchan() {
-	result := make(chan string, 100)
-	o := NewOchan(result, 100)
+func ExampleOw() {
+	buf := bytes.Buffer{}
+	o := New(&buf)
 
-	c1 := o.GetCh()
-	c2 := o.GetCh()
+	w1 := o.GetW()
+	w2 := o.GetW()
+	w3 := o.GetW()
 
-	c1 <- "Hello c1"
-	c2 <- "Hello c2"
-	c1 <- "Bye c1"
-	c2 <- "Bye c2"
+	time.Sleep(1 * time.Millisecond)
 
-	close(c1)
-	close(c2)
+	fmt.Fprintln(w1, "Hello c1")
+	fmt.Fprintln(w2, "Hello c2")
+	fmt.Fprintln(w3, "Hello c3")
+	fmt.Fprintln(w3, "Hello c3 again")
+	fmt.Fprintln(w1, "Hello c1 again")
+	w1.Close()
+	fmt.Fprintln(w2, "Hello c2 again")
+	fmt.Fprintln(w1, "Bye c1")
+	fmt.Fprintln(w2, "Bye c2")
+
+	w2.Close()
+	fmt.Fprintln(w3, "Bye c3")
+	w3.Close()
 
 	o.Wait()
-	close(result)
 
-	for s := range result {
-		fmt.Println(s)
-		// Output:
-		// Hello c1
-		// Bye c1
-		// Hello c2
-		// Bye c2
-	}
+	fmt.Println(buf.String())
+	// Output:
+	// Hello c1
+	// Hello c1 again
+	// Bye c1
+	// Hello c2
+	// Hello c2 again
+	// Bye c2
+	// Hello c3
+	// Hello c3 again
+	// Bye c3
 }
 ```
 

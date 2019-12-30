@@ -1,4 +1,4 @@
-package ochanw
+package ow
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func TestOchanwBasic(t *testing.T) {
+func TestOwBasic(t *testing.T) {
 	n1 := runtime.NumGoroutine()
 
 	expected := []string{

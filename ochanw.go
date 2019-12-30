@@ -1,4 +1,4 @@
-package ochanw
+package ow
 
 import (
 	"io"
@@ -118,7 +118,7 @@ type WriteCloser struct {
 	mu     sync.Mutex
 }
 
-// Write writes to ochanw's io.Writer.
+// Write writes to ow's io.Writer.
 func (w *WriteCloser) Write(p []byte) (n int, err error) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
@@ -139,7 +139,7 @@ func (w *WriteCloser) Write(p []byte) (n int, err error) {
 	return w.parent.out.Write(p)
 }
 
-// Close closes ochanw.WriteCloser.
+// Close closes ow.WriteCloser.
 func (w *WriteCloser) Close() error {
 	w.done <- struct{}{}
 	return nil
