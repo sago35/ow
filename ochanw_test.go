@@ -3,8 +3,65 @@ package ochanw
 import (
 	"bytes"
 	"fmt"
+	"runtime"
+	"strings"
+	"testing"
 	"time"
 )
+
+func TestOchanwBasic(t *testing.T) {
+	n1 := runtime.NumGoroutine()
+
+	expected := []string{
+		"c1-1",
+		"c1-2",
+		"c1-3",
+		"c2-1",
+		"c2-2",
+		"c3-1",
+		"c3-2",
+	}
+
+	buf := bytes.Buffer{}
+	o := New(&buf)
+	n2 := runtime.NumGoroutine()
+	if n1+1 != n2 {
+		t.Errorf("NumGoroutine %d %d", n1, n2)
+	}
+
+	c1 := o.GetW()
+	fmt.Fprintf(c1, "c1-1")
+	fmt.Fprintf(c1, "c1-2")
+
+	c2 := o.GetW()
+
+	c3 := o.GetW()
+	fmt.Fprintf(c3, "c3-1")
+	fmt.Fprintf(c2, "c2-1")
+	fmt.Fprintf(c3, "c3-2")
+	fmt.Fprintf(c2, "c2-2")
+	fmt.Fprintf(c1, "c1-3")
+
+	c1.Close()
+	c2.Close()
+	c3.Close()
+
+	n3 := runtime.NumGoroutine()
+	if n2 != n3 {
+		t.Errorf("NumGoroutine %d %d", n2, n3)
+	}
+
+	o.Wait()
+
+	if g, e := buf.String(), strings.Join(expected, ``); g != e {
+		t.Errorf("got %q, want %q", g, e)
+	}
+
+	n4 := runtime.NumGoroutine()
+	if n1 != n4 {
+		t.Errorf("NumGoroutine %d %d", n1, n4)
+	}
+}
 
 func ExampleOw() {
 	buf := bytes.Buffer{}
