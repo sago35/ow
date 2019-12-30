@@ -52,33 +52,21 @@ func New(out io.Writer, opt ...Option) *Ow {
 	}
 
 	go func(o *Ow) {
-		for {
-			select {
-			case w, ok := <-o.in:
-				if !ok {
-					close(o.done)
-					return
-				}
+		for w := range o.in {
 
-				w.mu.Lock()
-				if w.state == background {
-					w.state = toCurrent
-				}
-				w.mu.Unlock()
+			w.mu.Lock()
+			if w.state == background {
+				w.state = toCurrent
+			}
+			w.mu.Unlock()
 
-				func() {
-					for {
-						select {
-						case <-w.done:
-							if len(w.buffer) > 0 {
-								w.parent.out.Write(w.buffer)
-							}
-							return
-						}
-					}
-				}()
+			for range w.done {
+				if len(w.buffer) > 0 {
+					w.parent.out.Write(w.buffer)
+				}
 			}
 		}
+		close(o.done)
 	}(o)
 
 	return o
@@ -142,5 +130,6 @@ func (w *WriteCloser) Write(p []byte) (n int, err error) {
 // Close closes ow.WriteCloser.
 func (w *WriteCloser) Close() error {
 	w.done <- struct{}{}
+	close(w.done)
 	return nil
 }

@@ -51,7 +51,10 @@ func TestOwBasic(t *testing.T) {
 		t.Errorf("NumGoroutine %d %d", n2, n3)
 	}
 
-	o.Wait()
+	err := o.Wait()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	if g, e := buf.String(), strings.Join(expected, ``); g != e {
 		t.Errorf("got %q, want %q", g, e)
